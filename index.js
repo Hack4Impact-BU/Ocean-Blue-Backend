@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3000;
 
 //routes
 app.get("/", (req, res) => {
-    res.send("Hello wordl!")
+    res.send("Welcome Ocean Blue engineers!")
 })
 
 app.listen(PORT, () => console.log("Listening on port " + PORT));
