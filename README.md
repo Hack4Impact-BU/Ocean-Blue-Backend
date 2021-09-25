@@ -1,6 +1,6 @@
 # Ocean Blue Backend
 
-## To Run (on MacOS)
+## To Run
 1. Clone this repo
 2. Make sure you have NPM and Node.js
 3. `cd` to project directory
