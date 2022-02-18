@@ -2,10 +2,6 @@
 const express = require('express')
 const cors = require("cors");
 const app = express();
-<<<<<<< Updated upstream
-app.use(cors())
-app.use(express.json())
-=======
 require('dotenv').config();
 app.use(cors())
 app.use(express.json())
@@ -14,15 +10,14 @@ const bcrypt = require('bcrypt');
 // jwt token
 const jwt = require("jsonwebtoken");
 
->>>>>>> Stashed changes
 const PORT = process.env.PORT || 3000;
 //imports
 
-<<<<<<< Updated upstream
 //routes
 app.get("/", (req, res) => {
     res.send("Welcome Ocean Blue engineers!")
-=======
+})
+
 //connect to Azure Cosmos DB through mongoose
 mongoose.connect("mongodb://"+process.env.COSMOSDB_HOST+":"+process.env.COSMOSDB_PORT+"/"+process.env.COSMOSDB_DBNAME+"?ssl=true&retrywrites=false&maxIdleTimeMS=120000&replicaSet=globaldb", {
    auth: {
@@ -68,7 +63,6 @@ app.post("/register", async (req, res) => {
     newUser.save()
     .then(user => {res.json(user)})
     .catch(err => {res.status(400).json("Error" + err)})
->>>>>>> Stashed changes
 })
 
 // Sign in route
