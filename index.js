@@ -11,12 +11,6 @@ const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
 
 const PORT = process.env.PORT || 3000;
-//imports
-
-//routes
-app.get("/", (req, res) => {
-    res.send("Welcome Ocean Blue engineers!")
-})
 
 //connect to Azure Cosmos DB through mongoose
 mongoose.connect("mongodb://"+process.env.COSMOSDB_HOST+":"+process.env.COSMOSDB_PORT+"/"+process.env.COSMOSDB_DBNAME+"?ssl=true&retrywrites=false&maxIdleTimeMS=120000&replicaSet=globaldb", {
