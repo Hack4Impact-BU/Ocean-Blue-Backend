@@ -35,9 +35,6 @@ const userSchema = {
 
 const User = mongoose.model("Users", userSchema);
 
-
-
-
 // Default route
 
 app.get("/", (req, res) => {
