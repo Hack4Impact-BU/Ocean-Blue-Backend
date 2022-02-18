@@ -1,12 +1,15 @@
 // routing
-const express = require('express')
+const express = require('express');
+const mongoose = require('mongoose');
 const cors = require("cors");
 const app = express();
-require('dotenv').config();
+var env = require('dotenv').config();
 app.use(cors())
 app.use(express.json())
+
 // password encryption
 const bcrypt = require('bcrypt');
+
 // jwt token
 const jwt = require("jsonwebtoken");
 
