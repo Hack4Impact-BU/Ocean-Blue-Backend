@@ -4,8 +4,11 @@ const mongoose = require('mongoose');
 const cors = require("cors");
 const app = express();
 var env = require('dotenv').config();
-app.use(cors())
-app.use(express.json())
+app.use(cors());
+app.use(express.json());
+
+// schemas
+const User = require('./models/user');
 
 // password encryption
 const bcrypt = require('bcrypt');
@@ -27,13 +30,13 @@ mongoose.connect("mongodb://"+process.env.COSMOSDB_HOST+":"+process.env.COSMOSDB
 // SCHEMAS /////
 ////////////////
 
-const userSchema = {
-    username: String,
-    email: String,
-    password: String,
-}
+// const userSchema = {
+//     username: String,
+//     email: String,
+//     password: String,
+// }
 
-const User = mongoose.model("Users", userSchema);
+// const User = mongoose.model("Users", userSchema);
 
 // Default route
 
@@ -51,7 +54,17 @@ app.post("/register", async (req, res) => {
     const newUser = new User({
         username: req.body.username,
         email: req.body.email,
-        password: password
+        password: password,
+        birthday: req.body.birthday,
+        points: req.body.points,
+        animals: req.body.animals,
+        eventsCreated: req.body.eventsCreated,
+        eventsParticipated: req.body.eventsParticipated,
+        phoneNumber: req.body.phoneNumber,
+        description: req.body.description,
+        admin: req.body.admin,
+        crewLeader: req.body.crewLeder,
+
     });
 
     newUser.save()
