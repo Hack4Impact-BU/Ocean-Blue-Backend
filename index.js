@@ -26,18 +26,6 @@ mongoose.connect("mongodb://"+process.env.COSMOSDB_HOST+":"+process.env.COSMOSDB
    }
 });
 
-////////////////
-// SCHEMAS /////
-////////////////
-
-// const userSchema = {
-//     username: String,
-//     email: String,
-//     password: String,
-// }
-
-// const User = mongoose.model("Users", userSchema);
-
 // Default route
 
 app.get("/", (req, res) => {
@@ -45,50 +33,72 @@ app.get("/", (req, res) => {
 })
 
 // Register route
-// TODO: see if there is a duplicate email or username
 
 app.post("/register", async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const password = await bcrypt.hash(req.body.password, salt);
 
-    const newUser = new User({
-        username: req.body.username,
-        email: req.body.email,
-        password: password,
-        birthday: req.body.birthday,
-        points: req.body.points,
-        animals: req.body.animals,
-        eventsCreated: req.body.eventsCreated,
-        eventsParticipated: req.body.eventsParticipated,
-        phoneNumber: req.body.phoneNumber,
-        description: req.body.description,
-        admin: req.body.admin,
-        crewLeader: req.body.crewLeder,
+    User.find({email: req.body.email})
+    .then(async (user) => {
+        console.log(user)
+        if (user.length == 0) {
+            const newUser = new User({
+                username: req.body.username,
+                email: req.body.email,
+                password: password,
+                birthday: req.body.birthday,
+                points: req.body.points,
+                animals: req.body.animals,
+                eventsCreated: req.body.eventsCreated,
+                eventsParticipated: req.body.eventsParticipated,
+                phoneNumber: req.body.phoneNumber,
+                description: req.body.description,
+                admin: req.body.admin,
+                crewLeader: req.body.crewLeder,
+        
+            });
+        
+            newUser.save()
+            .then(user => {res.json(user)})
+            .catch(err => {res.status(400).json("Error" + err)})
+        } else {
+            res.send("EMAIL")
+        }
+    })
 
-    });
-
-    newUser.save()
-    .then(user => {res.json(user)})
-    .catch(err => {res.status(400).json("Error" + err)})
 })
+
 
 // Sign in route
 
 app.post("/signin", async (req, res) => {
-    User.find({username: req.body.username})
+    User.find({email: req.body.email})
     .then(async (user) => {
         if (user.length !== 0) {
             const validPassword = await bcrypt.compare(req.body.password, user[0].password)
             if (validPassword){
                 // TODO: Send JWT token
-                res.send("User found, log them in!")
+                res.json(user)
             } else {
-                res.send("Wrong password!")
+                res.send("PASS")
             }
         } else {
-            res.send("No user with username found!")
+            res.send("EMAIL")
         }
     }).catch((e) => {console.log(e)})
+})
+
+// Find user
+
+app.post("/retrieveUser", (req, res) => {
+    User.find({"_id" : ObjectId(req.body.id)})
+    .then((user) => {
+        if (user.length !== 0) {
+            res.json(user)
+        } else {
+            res.send("NOT_FOUND")
+        }
+    })
 })
 
 app.listen(PORT, () => console.log("Listening on port " + PORT));
