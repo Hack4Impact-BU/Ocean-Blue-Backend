@@ -4,7 +4,7 @@ const userSchema = {
     username: String,
     email: String,
     password: String,
-    birthday: Date,
+    birthday: String,
     points: Number,
     animals: Number,
     eventsCreated: Number,
