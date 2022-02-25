@@ -60,7 +60,7 @@ app.post("/register", async (req, res) => {
             .then(user => {res.json(user)})
             .catch(err => {res.status(400).json("Error" + err)})
         } else {
-            res.send("EMAIL")
+            res.status(401).json("Invalid email.")
         }
     })
 
@@ -73,26 +73,27 @@ app.post("/signin", async (req, res) => {
     .then(async (user) => {
         if (user.length !== 0) {
             const validPassword = await bcrypt.compare(req.body.password, user[0].password)
-            if (validPassword){
+            if (validPassword) {
                 const payload = { id: user.id, username: user.username, isAdmin: user.admin, isCrewLeader: user.crewLeader };
                 res.json(jwt.sign(payload, process.env.JWT_SECRET));
             } else {
-                res.send("PASS")
+                res.status(401).json("Invalid password.")
             }
         } else {
-            res.send("EMAIL")
+            res.status(401).json("Invalid email.")
         }
     }).catch((e) => {console.log(e)})
 })
 
 // Find user
+//TODO: add auth guard
 app.post("/retrieveUser", (req, res) => {
     User.find({"_id" : ObjectId(req.body.id)})
     .then((user) => {
         if (user.length !== 0) {
             res.json(user)
         } else {
-            res.send("NOT_FOUND")
+            res.status(404).json("User not found.")
         }
     })
 })
