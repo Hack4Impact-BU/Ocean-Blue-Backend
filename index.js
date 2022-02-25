@@ -27,13 +27,11 @@ mongoose.connect("mongodb://"+process.env.COSMOSDB_HOST+":"+process.env.COSMOSDB
 });
 
 // Default route
-
 app.get("/", (req, res) => {
     res.send("Welcome To the Azure Backend Using Mongoose")
 })
 
 // Register route
-
 app.post("/register", async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const password = await bcrypt.hash(req.body.password, salt);
@@ -70,15 +68,14 @@ app.post("/register", async (req, res) => {
 
 
 // Sign in route
-
 app.post("/signin", async (req, res) => {
     User.find({email: req.body.email})
     .then(async (user) => {
         if (user.length !== 0) {
             const validPassword = await bcrypt.compare(req.body.password, user[0].password)
             if (validPassword){
-                // TODO: Send JWT token
-                res.json(user)
+                const payload = { id: user.id, username: user.username, isAdmin: user.admin, isCrewLeader: user.crewLeader };
+                res.json(jwt.sign(payload, process.env.JWT_SECRET));
             } else {
                 res.send("PASS")
             }
@@ -89,7 +86,6 @@ app.post("/signin", async (req, res) => {
 })
 
 // Find user
-
 app.post("/retrieveUser", (req, res) => {
     User.find({"_id" : ObjectId(req.body.id)})
     .then((user) => {
