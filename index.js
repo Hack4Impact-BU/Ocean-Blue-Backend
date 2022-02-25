@@ -75,7 +75,7 @@ app.post("/signin", async (req, res) => {
             const validPassword = await bcrypt.compare(req.body.password, user[0].password)
             if (validPassword) {
                 const payload = { id: user.id, username: user.username, isAdmin: user.admin, isCrewLeader: user.crewLeader };
-                res.json(jwt.sign(payload, process.env.JWT_SECRET));
+                res.json(jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN }));
             } else {
                 res.status(401).json("Invalid password.")
             }
