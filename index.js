@@ -7,6 +7,7 @@ var env = require('dotenv').config();
 app.use(cors());
 app.use(express.json());
 
+
 // schemas
 const User = require('./models/user');
 
@@ -85,8 +86,12 @@ app.post("/signin", async (req, res) => {
     }).catch((e) => {console.log(e)})
 })
 
+
 // Find user
-//TODO: add auth guard
+// TODO: add auth guard
+
+const ObjectId = require('mongodb').ObjectId;
+
 app.post("/retrieveUser", (req, res) => {
     User.find({"_id" : ObjectId(req.body.id)})
     .then((user) => {
