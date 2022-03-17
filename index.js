@@ -10,6 +10,7 @@ app.use(express.json());
 
 // schemas
 const User = require('./models/user');
+const Event = require('./models/event');
 
 // password encryption
 const bcrypt = require('bcrypt');
@@ -89,7 +90,6 @@ app.post("/signin", async (req, res) => {
 
 // Find user
 // TODO: add auth guard
-
 const ObjectId = require('mongodb').ObjectId;
 
 app.post("/retrieveUser", (req, res) => {
@@ -102,5 +102,34 @@ app.post("/retrieveUser", (req, res) => {
         }
     })
 })
+
+// Set event
+app.post("/setEvent", (req, res) => {
+    const newEvent = new Event({
+        eventCreator: req.body.eventCreator,
+        date: req.body.date,
+        description: req.body.description,
+        address: req.body.address,
+        latitude: req.body.latitude,
+        longitude: req.body.longitude,
+    });
+
+    newEvent.save()
+    .then(user => {res.json(user)})
+    .catch(err => {res.status(400).json("Error" + err)})
+})
+
+// Retrieve Event
+app.post("/retrieveEvent", (req, res) => {
+    Event.find({"_id" : ObjectId(req.body.id)})
+    .then((event) => {
+        if (event.length !== 0) {
+            res.json(event)
+        } else {
+            res.status(404).json("Event not found.")
+        }
+    })
+})
+
 
 app.listen(PORT, () => console.log("Listening on port " + PORT));
