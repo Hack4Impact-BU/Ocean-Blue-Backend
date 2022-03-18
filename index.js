@@ -92,6 +92,7 @@ app.post("/signin", async (req, res) => {
 // TODO: add auth guard
 const ObjectId = require('mongodb').ObjectId;
 
+// Retreieve User
 app.post("/retrieveUser", (req, res) => {
     User.find({"_id" : ObjectId(req.body.id)})
     .then((user) => {
@@ -103,7 +104,22 @@ app.post("/retrieveUser", (req, res) => {
     })
 })
 
-// Create event
+
+// Retrieve all Users
+app.post("/retrieveUsers", (req, res) => {
+    // Find all users
+    const query = User.find({});
+
+    // Select the username email and admin feilds
+    query.select('username email admin');
+    
+    query.exec(function (err, users) {
+        if (err) return handleError(err);
+        res.json(users)
+    });
+})
+
+// Set event
 app.post("/createEvent", (req, res) => {
     const newEvent = new Event({
         eventCreator: req.body.eventCreator,
@@ -134,5 +150,18 @@ app.post("/retrieveEvent", (req, res) => {
     })
 })
 
+// Retrieve all Events
+app.post("/retrieveEvents", (req, res) => {
+    // Find all users
+    const query = Event.find({});
+
+    // Select the eventCreator description address and date feilds
+    query.select('eventCreator description address date');
+    
+    query.exec(function (err, users) {
+        if (err) return handleError(err);
+        res.json(users)
+    });
+})
 
 app.listen(PORT, () => console.log("Listening on port " + PORT));
