@@ -103,8 +103,8 @@ app.post("/retrieveUser", (req, res) => {
     })
 })
 
-// Set event
-app.post("/setEvent", (req, res) => {
+// Create event
+app.post("/createEvent", (req, res) => {
     const newEvent = new Event({
         eventCreator: req.body.eventCreator,
         date: req.body.date,
@@ -112,10 +112,13 @@ app.post("/setEvent", (req, res) => {
         address: req.body.address,
         latitude: req.body.latitude,
         longitude: req.body.longitude,
+        garbageCollected: 0,
+        isPublic: req.body.isPublic,
+        volunteers: [],
     });
 
     newEvent.save()
-    .then(user => {res.json(user)})
+    .then(event => {res.json(event)})
     .catch(err => {res.status(400).json("Error" + err)})
 })
 

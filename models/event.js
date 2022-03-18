@@ -7,6 +7,9 @@ const eventSchema = {
     address: String,
     latitude: Number,
     longitude: Number,
+    garbageCollected: Number,
+    isPublic: Boolean,
+    volunteers: Array,
 }
 
 const Event = mongoose.model("Events", eventSchema);
