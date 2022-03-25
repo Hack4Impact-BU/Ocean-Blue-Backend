@@ -2,10 +2,14 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require("cors");
+const axios = require("axios");
 const app = express();
 var env = require('dotenv').config();
 app.use(cors());
 app.use(express.json());
+
+// API Keys.
+const GEOAPIFY_KEY = process.env.GEOAPIFY_KEY;
 
 
 // schemas
@@ -20,6 +24,7 @@ const jwt = require("jsonwebtoken");
 
 const PORT = process.env.PORT || 3000;
 
+/*
 //connect to Azure Cosmos DB through mongoose
 mongoose.connect("mongodb://"+process.env.COSMOSDB_HOST+":"+process.env.COSMOSDB_PORT+"/"+process.env.COSMOSDB_DBNAME+"?ssl=true&retrywrites=false&maxIdleTimeMS=120000&replicaSet=globaldb", {
    auth: {
@@ -27,6 +32,7 @@ mongoose.connect("mongodb://"+process.env.COSMOSDB_HOST+":"+process.env.COSMOSDB
      password: process.env.COSMOSDB_PASSWORD
    }
 });
+*/
 
 // Default route
 app.get("/", (req, res) => {
@@ -162,6 +168,24 @@ app.post("/retrieveEvents", (req, res) => {
         if (err) return handleError(err);
         res.json(users)
     });
+})
+
+// Query GEOAPIFY for event address field.
+app.post("/geoapify", (req, res) => {
+    const formattedAddress = req.body.formattedAddress;
+    console.log(formattedAddress);
+
+    axios.get("https://api.geoapify.com/v1/geocode/autocomplete?text=" + formattedAddress + "&format=json&apiKey=" + GEOAPIFY_KEY)
+        .then(response => {
+            const results = response.data.results;
+            let formattedResults = [];
+
+            for (var i=0; i < results.length; i++){
+                formattedResults.push(results[i].formatted);
+            }
+
+            res.send(formattedResults);
+        })
 })
 
 app.listen(PORT, () => console.log("Listening on port " + PORT));
