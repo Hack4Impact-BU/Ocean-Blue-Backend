@@ -59,7 +59,10 @@ app.post("/register", async (req, res) => {
             });
         
             newUser.save()
-            .then(user => {res.json(user)})
+            .then(user => {
+                const payload = { id: user.id, username: user.username, isAdmin: user.admin, isCrewLeader: user.crewLeader };
+                res.json(jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN }));
+            })
             .catch(err => {res.status(400).json("Error" + err)})
         } else {
             res.status(401).json("Invalid email.")
