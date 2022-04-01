@@ -94,7 +94,8 @@ const ObjectId = require('mongodb').ObjectId;
 
 // Retreieve User
 app.post("/retrieveUser", (req, res) => {
-    User.find({"_id" : ObjectId(req.body.id)})
+    console.log(req.body.username)
+    User.find({"username" : (req.body.username)})
     .then((user) => {
         if (user.length !== 0) {
             res.json(user)
@@ -136,7 +137,7 @@ app.post("/setEvent", (req, res) => {
 
 // Retrieve Event
 app.post("/retrieveEvent", (req, res) => {
-    Event.find({"_id" : ObjectId(req.body.id)})
+    Event.find({"eventCreator" :(req.body.eventCreator)})
     .then((event) => {
         if (event.length !== 0) {
             res.json(event)
