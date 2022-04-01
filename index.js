@@ -59,7 +59,10 @@ app.post("/register", async (req, res) => {
             });
         
             newUser.save()
-            .then(user => {res.json(user)})
+            .then(user => {
+                const payload = { id: user.id, username: user.username, isAdmin: user.admin, isCrewLeader: user.crewLeader };
+                res.json(jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN }));
+            })
             .catch(err => {res.status(400).json("Error" + err)})
         } else {
             res.status(401).json("Invalid email.")
@@ -105,6 +108,7 @@ app.post("/retrieveUser", (req, res) => {
     })
 })
 
+
 // Retrieve all Users
 app.post("/retrieveUsers", (req, res) => {
     // Find all users
@@ -120,7 +124,7 @@ app.post("/retrieveUsers", (req, res) => {
 })
 
 // Set event
-app.post("/setEvent", (req, res) => {
+app.post("/createEvent", (req, res) => {
     const newEvent = new Event({
         eventCreator: req.body.eventCreator,
         date: req.body.date,
@@ -128,10 +132,13 @@ app.post("/setEvent", (req, res) => {
         address: req.body.address,
         latitude: req.body.latitude,
         longitude: req.body.longitude,
+        garbageCollected: 0,
+        isPublic: req.body.isPublic,
+        volunteers: [],
     });
 
     newEvent.save()
-    .then(user => {res.json(user)})
+    .then(event => {res.json(event)})
     .catch(err => {res.status(400).json("Error" + err)})
 })
 
