@@ -7,10 +7,10 @@ var env = require('dotenv').config();
 app.use(cors());
 app.use(express.json());
 
-
 // schemas
 const User = require('./models/user');
 const Event = require('./models/event');
+
 
 // password encryption
 const bcrypt = require('bcrypt');
@@ -63,6 +63,7 @@ app.post("/register", async (req, res) => {
                 const payload = { id: user.id, username: user.username, isAdmin: user.admin, isCrewLeader: user.crewLeader };
                 res.json(jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN }));
             })
+
             .catch(err => {res.status(400).json("Error" + err)})
         } else {
             res.status(401).json("Invalid email.")
@@ -90,7 +91,6 @@ app.post("/signin", async (req, res) => {
     }).catch((e) => {console.log(e)})
 })
 
-
 // Find user
 // TODO: add auth guard
 const ObjectId = require('mongodb').ObjectId;
@@ -99,6 +99,7 @@ const ObjectId = require('mongodb').ObjectId;
 app.post("/retrieveUser", (req, res) => {
     console.log(req.body.username)
     User.find({"username" : (req.body.username)})
+
     .then((user) => {
         if (user.length !== 0) {
             res.json(user)
@@ -107,7 +108,6 @@ app.post("/retrieveUser", (req, res) => {
         }
     })
 })
-
 
 // Retrieve all Users
 app.post("/retrieveUsers", (req, res) => {
