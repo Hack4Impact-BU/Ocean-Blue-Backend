@@ -9,6 +9,8 @@ app.use(express.json());
 
 // schemas
 const User = require('./models/user');
+const Event = require('./models/event');
+
 
 // password encryption
 const bcrypt = require('bcrypt');
@@ -57,7 +59,11 @@ app.post("/register", async (req, res) => {
             });
         
             newUser.save()
-            .then(user => {res.json(user)})
+            .then(user => {
+                const payload = { id: user.id, username: user.username, isAdmin: user.admin, isCrewLeader: user.crewLeader };
+                res.json(jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN }));
+            })
+
             .catch(err => {res.status(400).json("Error" + err)})
         } else {
             res.status(401).json("Invalid email.")
@@ -86,9 +92,14 @@ app.post("/signin", async (req, res) => {
 })
 
 // Find user
-//TODO: add auth guard
+// TODO: add auth guard
+const ObjectId = require('mongodb').ObjectId;
+
+// Retreieve User
 app.post("/retrieveUser", (req, res) => {
-    User.find({"_id" : ObjectId(req.body.id)})
+    console.log(req.body.username)
+    User.find({"username" : (req.body.username)})
+
     .then((user) => {
         if (user.length !== 0) {
             res.json(user)
@@ -96,6 +107,65 @@ app.post("/retrieveUser", (req, res) => {
             res.status(404).json("User not found.")
         }
     })
+})
+
+// Retrieve all Users
+app.post("/retrieveUsers", (req, res) => {
+    // Find all users
+    const query = User.find({});
+
+    // Select the username email and admin feilds
+    query.select('username email admin');
+    
+    query.exec(function (err, users) {
+        if (err) return handleError(err);
+        res.json(users)
+    });
+})
+
+// Set event
+app.post("/createEvent", (req, res) => {
+    const newEvent = new Event({
+        eventCreator: req.body.eventCreator,
+        date: req.body.date,
+        description: req.body.description,
+        address: req.body.address,
+        latitude: req.body.latitude,
+        longitude: req.body.longitude,
+        garbageCollected: 0,
+        isPublic: req.body.isPublic,
+        volunteers: [],
+    });
+
+    newEvent.save()
+    .then(event => {res.json(event)})
+    .catch(err => {res.status(400).json("Error" + err)})
+})
+
+// Retrieve Event
+app.post("/retrieveEvent", (req, res) => {
+    Event.find({"eventCreator" :(req.body.eventCreator)})
+    .then((event) => {
+        if (event.length !== 0) {
+            res.json(event)
+        } else {
+            res.status(404).json("Event not found.")
+        }
+    })
+})
+
+// Retrieve all Events
+app.post("/retrieveEvents", (req, res) => {
+    // Find all users
+    const query = Event.find({});
+
+    // Select the eventCreator description address and date feilds
+    query.select('eventCreator description address date');
+    
+    query.exec(function (err, users) {
+        if (err) return handleError(err);
+        res.json(users)
+    });
 })
 
 app.listen(PORT, () => console.log("Listening on port " + PORT));
