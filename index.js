@@ -16,6 +16,7 @@ const GEOAPIFY_KEY = process.env.GEOAPIFY_KEY;
 const User = require('./models/user');
 const Event = require('./models/event');
 
+
 // password encryption
 const bcrypt = require('bcrypt');
 
@@ -24,15 +25,13 @@ const jwt = require("jsonwebtoken");
 
 const PORT = process.env.PORT || 3000;
 
-/*
 //connect to Azure Cosmos DB through mongoose
-mongoose.connect("mongodb://"+process.env.COSMOSDB_HOST+":"+process.env.COSMOSDB_PORT+"/"+process.env.COSMOSDB_DBNAME+"?ssl=true&retrywrites=false&maxIdleTimeMS=120000&replicaSet=globaldb", {
-   auth: {
-     username: process.env.COSMOSDB_USER,
-     password: process.env.COSMOSDB_PASSWORD
-   }
-});
-*/
+// mongoose.connect("mongodb://"+process.env.COSMOSDB_HOST+":"+process.env.COSMOSDB_PORT+"/"+process.env.COSMOSDB_DBNAME+"?ssl=true&retrywrites=false&maxIdleTimeMS=120000&replicaSet=globaldb", {
+//    auth: {
+//      username: process.env.COSMOSDB_USER,
+//      password: process.env.COSMOSDB_PASSWORD
+//    }
+// });
 
 // Default route
 app.get("/", (req, res) => {
@@ -65,7 +64,12 @@ app.post("/register", async (req, res) => {
             });
         
             newUser.save()
-            .then(user => {res.json(user)})
+
+            .then(user => {
+                const payload = { id: user.id, username: user.username, isAdmin: user.admin, isCrewLeader: user.crewLeader };
+                res.json(jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN }));
+            })
+
             .catch(err => {res.status(400).json("Error" + err)})
         } else {
             res.status(401).json("Invalid email.")
@@ -93,14 +97,14 @@ app.post("/signin", async (req, res) => {
     }).catch((e) => {console.log(e)})
 })
 
-
 // Find user
 // TODO: add auth guard
 const ObjectId = require('mongodb').ObjectId;
 
 // Retreieve User
 app.post("/retrieveUser", (req, res) => {
-    User.find({"_id" : ObjectId(req.body.id)})
+    console.log(req.body.username)
+    User.find({"username" : (req.body.username)})
     .then((user) => {
         if (user.length !== 0) {
             res.json(user)
@@ -109,7 +113,6 @@ app.post("/retrieveUser", (req, res) => {
         }
     })
 })
-
 
 // Retrieve all Users
 app.post("/retrieveUsers", (req, res) => {
@@ -146,7 +149,7 @@ app.post("/createEvent", (req, res) => {
 
 // Retrieve Event
 app.post("/retrieveEvent", (req, res) => {
-    Event.find({"_id" : ObjectId(req.body.id)})
+    Event.find({"eventCreator" :(req.body.eventCreator)})
     .then((event) => {
         if (event.length !== 0) {
             res.json(event)
