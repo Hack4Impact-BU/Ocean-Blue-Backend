@@ -2,10 +2,15 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require("cors");
+const axios = require("axios");
 const app = express();
 var env = require('dotenv').config();
 app.use(cors());
 app.use(express.json());
+
+// API Keys.
+const GEOAPIFY_KEY = process.env.GEOAPIFY_KEY;
+
 
 // schemas
 const User = require('./models/user');
@@ -21,12 +26,12 @@ const jwt = require("jsonwebtoken");
 const PORT = process.env.PORT || 3000;
 
 //connect to Azure Cosmos DB through mongoose
-mongoose.connect("mongodb://"+process.env.COSMOSDB_HOST+":"+process.env.COSMOSDB_PORT+"/"+process.env.COSMOSDB_DBNAME+"?ssl=true&retrywrites=false&maxIdleTimeMS=120000&replicaSet=globaldb", {
-   auth: {
-     username: process.env.COSMOSDB_USER,
-     password: process.env.COSMOSDB_PASSWORD
-   }
-});
+// mongoose.connect("mongodb://"+process.env.COSMOSDB_HOST+":"+process.env.COSMOSDB_PORT+"/"+process.env.COSMOSDB_DBNAME+"?ssl=true&retrywrites=false&maxIdleTimeMS=120000&replicaSet=globaldb", {
+//    auth: {
+//      username: process.env.COSMOSDB_USER,
+//      password: process.env.COSMOSDB_PASSWORD
+//    }
+// });
 
 // Default route
 app.get("/", (req, res) => {
@@ -59,6 +64,7 @@ app.post("/register", async (req, res) => {
             });
         
             newUser.save()
+
             .then(user => {
                 const payload = { id: user.id, username: user.username, isAdmin: user.admin, isCrewLeader: user.crewLeader };
                 res.json(jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN }));
@@ -99,7 +105,6 @@ const ObjectId = require('mongodb').ObjectId;
 app.post("/retrieveUser", (req, res) => {
     console.log(req.body.username)
     User.find({"username" : (req.body.username)})
-
     .then((user) => {
         if (user.length !== 0) {
             res.json(user)
@@ -166,6 +171,24 @@ app.post("/retrieveEvents", (req, res) => {
         if (err) return handleError(err);
         res.json(users)
     });
+})
+
+// Query GEOAPIFY for event address field.
+app.post("/geoapify", (req, res) => {
+    const formattedAddress = req.body.formattedAddress;
+    console.log(formattedAddress);
+
+    axios.get("https://api.geoapify.com/v1/geocode/autocomplete?text=" + formattedAddress + "&format=json&apiKey=" + GEOAPIFY_KEY)
+        .then(response => {
+            const results = response.data.results;
+            let formattedResults = [];
+
+            for (var i=0; i < results.length; i++){
+                formattedResults.push(results[i].formatted);
+            }
+
+            res.send(formattedResults);
+        })
 })
 
 app.listen(PORT, () => console.log("Listening on port " + PORT));
