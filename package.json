@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "deploy": "forever start src/index.js",
-		"stop-deploy": "forever stop src/index.js"
+    "deploy": "forever start index.js",
+		"stop-deploy": "forever stop index.js"
   },
   "author": "",
   "license": "ISC",
