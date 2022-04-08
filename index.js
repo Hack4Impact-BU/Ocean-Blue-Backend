@@ -64,7 +64,6 @@ app.post("/register", async (req, res) => {
             });
         
             newUser.save()
-
             .then(user => {
                 const payload = { id: user.id, username: user.username, isAdmin: user.admin, isCrewLeader: user.crewLeader };
                 res.json(jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN }));
@@ -115,7 +114,7 @@ app.post("/retrieveUser", (req, res) => {
 })
 
 // Retrieve all Users
-app.post("/retrieveUsers", (req, res) => {
+app.get("/retrieveUsers", (req, res) => {
     // Find all users
     const query = User.find({});
 
@@ -165,7 +164,7 @@ app.post("/retrieveEvents", (req, res) => {
     const query = Event.find({});
 
     // Select the eventCreator description address and date feilds
-    query.select('eventCreator description address date');
+    query.select('eventCreator description address date latitude longitude');
     
     query.exec(function (err, users) {
         if (err) return handleError(err);
