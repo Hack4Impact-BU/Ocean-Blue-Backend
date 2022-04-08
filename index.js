@@ -160,7 +160,7 @@ app.post("/retrieveEvents", (req, res) => {
     const query = Event.find({});
 
     // Select the eventCreator description address and date feilds
-    query.select('eventCreator description address date');
+    query.select('eventCreator description address date latitude longitude');
     
     query.exec(function (err, users) {
         if (err) return handleError(err);
