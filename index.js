@@ -110,7 +110,7 @@ app.post("/retrieveUser", (req, res) => {
 })
 
 // Retrieve all Users
-app.post("/retrieveUsers", (req, res) => {
+app.get("/retrieveUsers", (req, res) => {
     // Find all users
     const query = User.find({});
 
