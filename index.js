@@ -26,12 +26,12 @@ const jwt = require("jsonwebtoken");
 const PORT = process.env.PORT || 3000;
 
 //connect to Azure Cosmos DB through mongoose
-// mongoose.connect("mongodb://"+process.env.COSMOSDB_HOST+":"+process.env.COSMOSDB_PORT+"/"+process.env.COSMOSDB_DBNAME+"?ssl=true&retrywrites=false&maxIdleTimeMS=120000&replicaSet=globaldb", {
-//    auth: {
-//      username: process.env.COSMOSDB_USER,
-//      password: process.env.COSMOSDB_PASSWORD
-//    }
-// });
+mongoose.connect("mongodb://"+process.env.COSMOSDB_HOST+":"+process.env.COSMOSDB_PORT+"/"+process.env.COSMOSDB_DBNAME+"?ssl=true&retrywrites=false&maxIdleTimeMS=120000&replicaSet=globaldb", {
+   auth: {
+     username: process.env.COSMOSDB_USER,
+     password: process.env.COSMOSDB_PASSWORD
+   }
+});
 
 // Default route
 app.get("/", (req, res) => {
