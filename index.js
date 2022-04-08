@@ -176,18 +176,11 @@ app.get("/retrieveEvents", (req, res) => {
 // Query GEOAPIFY for event address field.
 app.post("/geoapify", (req, res) => {
     const formattedAddress = req.body.formattedAddress;
-    console.log(formattedAddress);
 
     axios.get("https://api.geoapify.com/v1/geocode/autocomplete?text=" + formattedAddress + "&format=json&apiKey=" + GEOAPIFY_KEY)
         .then(response => {
             const results = response.data.results;
-            let formattedResults = [];
-
-            for (var i=0; i < results.length; i++){
-                formattedResults.push(results[i].formatted);
-            }
-
-            res.send(formattedResults);
+            res.send(results);
         })
 })
 
