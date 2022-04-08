@@ -101,7 +101,7 @@ app.post("/signin", async (req, res) => {
 const ObjectId = require('mongodb').ObjectId;
 
 // Retreieve User
-app.post("/retrieveUser", (req, res) => {
+app.get("/retrieveUser", (req, res) => {
     console.log(req.body.username)
     User.find({"username" : (req.body.username)})
     .then((user) => {
@@ -147,7 +147,7 @@ app.post("/createEvent", (req, res) => {
 })
 
 // Retrieve Event
-app.post("/retrieveEvent", (req, res) => {
+app.get("/retrieveEvent", (req, res) => {
     Event.find({"eventCreator" :(req.body.eventCreator)})
     .then((event) => {
         if (event.length !== 0) {
@@ -159,7 +159,7 @@ app.post("/retrieveEvent", (req, res) => {
 })
 
 // Retrieve all Events
-app.post("/retrieveEvents", (req, res) => {
+app.get("/retrieveEvents", (req, res) => {
     // Find all users
     const query = Event.find({});
 
