@@ -11,12 +11,12 @@ app.use(express.json());
 const User = require('./models/user');
 const Event = require('./models/event');
 
-
 // password encryption
 const bcrypt = require('bcrypt');
 
 // jwt token
 const jwt = require("jsonwebtoken");
+const auth = require("./middleware/auth")
 
 const PORT = process.env.PORT || 3000;
 
@@ -47,14 +47,14 @@ app.post("/register", async (req, res) => {
                 email: req.body.email,
                 password: password,
                 birthday: req.body.birthday,
-                points: req.body.points,
-                animals: req.body.animals,
-                eventsCreated: req.body.eventsCreated,
-                eventsParticipated: req.body.eventsParticipated,
+                points: 0,
+                animals: 0,
+                eventsCreated: 0,
+                eventsParticipated: 0,
                 phoneNumber: req.body.phoneNumber,
                 description: req.body.description,
-                admin: req.body.admin,
-                crewLeader: req.body.crewLeder,
+                admin: false,
+                crewLeader: false,
         
             });
         
@@ -71,7 +71,6 @@ app.post("/register", async (req, res) => {
     })
 
 })
-
 
 // Sign in route
 app.post("/signin", async (req, res) => {
@@ -91,14 +90,11 @@ app.post("/signin", async (req, res) => {
     }).catch((e) => {console.log(e)})
 })
 
-// Find user
-// TODO: add auth guard
 const ObjectId = require('mongodb').ObjectId;
 
 // Retreieve User
-app.get("/retrieveUser", (req, res) => {
-    console.log(req.body.username)
-    User.find({"username" : (req.body.username)})
+app.get("/retrieveUser", auth, (req, res) => {
+    User.find({"username" : (req.headers.username)})
 
     .then((user) => {
         if (user.length !== 0) {
@@ -110,7 +106,7 @@ app.get("/retrieveUser", (req, res) => {
 })
 
 // Retrieve all Users
-app.get("/retrieveUsers", (req, res) => {
+app.get("/retrieveUsers", auth, (req, res) => {
     // Find all users
     const query = User.find({});
 
@@ -124,7 +120,7 @@ app.get("/retrieveUsers", (req, res) => {
 })
 
 // Set event
-app.post("/createEvent", (req, res) => {
+app.post("/createEvent", auth, (req, res) => {
     const newEvent = new Event({
         eventCreator: req.body.eventCreator,
         date: req.body.date,
@@ -143,8 +139,8 @@ app.post("/createEvent", (req, res) => {
 })
 
 // Retrieve Event
-app.get("/retrieveEvent", (req, res) => {
-    Event.find({"eventCreator" :(req.body.eventCreator)})
+app.get("/retrieveEvent", auth, (req, res) => {
+    Event.find({"_id" : ObjectId(req.headers.id)})
     .then((event) => {
         if (event.length !== 0) {
             res.json(event)
@@ -155,13 +151,14 @@ app.get("/retrieveEvent", (req, res) => {
 })
 
 // Retrieve all Events
-app.get("/retrieveEvents", (req, res) => {
+app.get("/retrieveEvents", auth, (req, res) => {
+
     // Find all users
     const query = Event.find({});
 
-    // Select the eventCreator description address and date feilds
+    // Select the eventCreator description address and date fields
     query.select('eventCreator description address date latitude longitude');
-    
+
     query.exec(function (err, users) {
         if (err) return handleError(err);
         res.json(users)
@@ -169,3 +166,10 @@ app.get("/retrieveEvents", (req, res) => {
 })
 
 app.listen(PORT, () => console.log("Listening on port " + PORT));
+
+
+// Update user
+
+// Sign up for event (add )
+
+// Delete event
