@@ -15,13 +15,14 @@ const GEOAPIFY_KEY = process.env.GEOAPIFY_KEY;
 // schemas
 const User = require('./models/user');
 const Event = require('./models/event');
-
+const ObjectId = require('mongodb').ObjectId;
 
 // password encryption
 const bcrypt = require('bcrypt');
 
 // jwt token
 const jwt = require("jsonwebtoken");
+const auth = require("./middleware/auth")
 
 const PORT = process.env.PORT || 3000;
 
@@ -39,6 +40,10 @@ app.get("/", (req, res) => {
     res.send("Welcome To the Azure Backend Using Mongoose")
 })
 
+//////////////////
+///// USERS //////
+//////////////////
+
 // Register route
 app.post("/register", async (req, res) => {
     const salt = await bcrypt.genSalt(10);
@@ -53,21 +58,21 @@ app.post("/register", async (req, res) => {
                 email: req.body.email,
                 password: password,
                 birthday: req.body.birthday,
-                points: req.body.points,
-                animals: req.body.animals,
-                eventsCreated: req.body.eventsCreated,
-                eventsParticipated: req.body.eventsParticipated,
+                points: 0,
+                animals: 0,
+                eventsCreated: 0,
+                eventsParticipated: 0,
                 phoneNumber: req.body.phoneNumber,
                 description: req.body.description,
-                admin: req.body.admin,
-                crewLeader: req.body.crewLeder,
+                admin: false,
+                crewLeader: false,
         
             });
         
             newUser.save()
             .then(user => {
                 const payload = { id: user.id, username: user.username, isAdmin: user.admin, isCrewLeader: user.crewLeader };
-                res.json(jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN }));
+                res.json(jwt.sign(payload, process.env.JWT_SECRET));
             })
 
             .catch(err => {res.status(400).json("Error" + err)})
@@ -78,7 +83,6 @@ app.post("/register", async (req, res) => {
 
 })
 
-
 // Sign in route
 app.post("/signin", async (req, res) => {
     User.find({email: req.body.email})
@@ -86,8 +90,9 @@ app.post("/signin", async (req, res) => {
         if (user.length !== 0) {
             const validPassword = await bcrypt.compare(req.body.password, user[0].password)
             if (validPassword) {
-                const payload = { id: user.id, username: user.username, isAdmin: user.admin, isCrewLeader: user.crewLeader };
-                res.json(jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN }));
+                console.log(user)
+                const payload = { id: user[0].id, username: user[0].username, isAdmin: user[0].admin, isCrewLeader: user[0].crewLeader };
+                res.json(jwt.sign(payload, process.env.JWT_SECRET));
             } else {
                 res.status(401).json("Invalid password.")
             }
@@ -97,14 +102,9 @@ app.post("/signin", async (req, res) => {
     }).catch((e) => {console.log(e)})
 })
 
-// Find user
-// TODO: add auth guard
-const ObjectId = require('mongodb').ObjectId;
-
 // Retreieve User
-app.get("/retrieveUser", (req, res) => {
-    console.log(req.body.username)
-    User.find({"username" : (req.body.username)})
+app.get("/retrieveUser", auth, (req, res) => {
+    User.find({"username" : (req.headers.username)})
     .then((user) => {
         if (user.length !== 0) {
             res.json(user)
@@ -115,7 +115,7 @@ app.get("/retrieveUser", (req, res) => {
 })
 
 // Retrieve all Users
-app.get("/retrieveUsers", (req, res) => {
+app.get("/retrieveUsers", auth, (req, res) => {
     // Find all users
     const query = User.find({});
 
@@ -128,8 +128,32 @@ app.get("/retrieveUsers", (req, res) => {
     });
 })
 
+// Update user
+app.put("/updateUser", auth, (req, res) => {
+    User.updateOne({"_id": ObjectId(req.headers.id)}, {
+        $set: {
+            crewLeader: req.headers.crewleader,
+            admin: req.headers.admin,
+        }, $inc: {
+            points: req.headers.points,
+        }
+    }).then((val) => {
+        res.json(val)
+    }).catch(e => {
+        res.status(404).json("Could not update")
+    })
+})
+
+app.get("/getCurrentUser", auth, (req, res) => {
+    res.json(req.user)
+})
+
+//////////////////
+//// EVENTS //////
+//////////////////
+
 // Set event
-app.post("/createEvent", (req, res) => {
+app.post("/createEvent", auth, (req, res) => {
     const newEvent = new Event({
         eventCreator: req.body.eventCreator,
         date: req.body.date,
@@ -148,8 +172,8 @@ app.post("/createEvent", (req, res) => {
 })
 
 // Retrieve Event
-app.get("/retrieveEvent", (req, res) => {
-    Event.find({"eventCreator" :(req.body.eventCreator)})
+app.get("/retrieveEvent", auth, (req, res) => {
+    Event.find({"_id" : ObjectId(req.headers.id)})
     .then((event) => {
         if (event.length !== 0) {
             res.json(event)
@@ -160,18 +184,39 @@ app.get("/retrieveEvent", (req, res) => {
 })
 
 // Retrieve all Events
-app.get("/retrieveEvents", (req, res) => {
+app.get("/retrieveEvents", auth, (req, res) => {
     // Find all users
     const query = Event.find({});
 
-    // Select the eventCreator description address and date feilds
+    // Select the eventCreator description address and date fields
     query.select('eventCreator description address date latitude longitude');
-    
+
     query.exec(function (err, users) {
         if (err) return handleError(err);
         res.json(users)
     });
 })
+
+// Add to event
+app.put("/addToEvent", auth, (req, res) => {
+    Event.updateOne({"_id": ObjectId(req.headers.eventid)}, {
+        $push: {
+            volunteers: [[req.headers.userid, req.headers.username]]
+        }
+    }).then((val) => {
+        res.json(val)
+    }).catch(e => {
+        res.status("404").json("Could not add to event")
+    })
+})
+
+// Delete event
+app.delete("/deleteEvent", auth, (req, res) => {
+    Event.deleteOne({"_id": ObjectId(req.headers.id)})
+    .then(val => {res.json(val)})
+    .catch(e => {res.status(404).json("Could not delete")})
+})
+
 
 // Query GEOAPIFY for event address field.
 app.post("/geoapify", (req, res) => {
