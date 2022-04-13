@@ -66,7 +66,7 @@ app.post("/register", async (req, res) => {
             newUser.save()
             .then(user => {
                 const payload = { id: user.id, username: user.username, isAdmin: user.admin, isCrewLeader: user.crewLeader };
-                res.json(jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN }));
+                res.json(jwt.sign(payload, process.env.JWT_SECRET));
             })
 
             .catch(err => {res.status(400).json("Error" + err)})
@@ -84,8 +84,9 @@ app.post("/signin", async (req, res) => {
         if (user.length !== 0) {
             const validPassword = await bcrypt.compare(req.body.password, user[0].password)
             if (validPassword) {
-                const payload = { id: user.id, username: user.username, isAdmin: user.admin, isCrewLeader: user.crewLeader };
-                res.json(jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN }));
+                console.log(user)
+                const payload = { id: user[0].id, username: user[0].username, isAdmin: user[0].admin, isCrewLeader: user[0].crewLeader };
+                res.json(jwt.sign(payload, process.env.JWT_SECRET));
             } else {
                 res.status(401).json("Invalid password.")
             }
@@ -124,7 +125,7 @@ app.get("/retrieveUsers", auth, (req, res) => {
 
 // Update user
 app.put("/updateUser", auth, (req, res) => {
-    User.updateOne({_id: ObjectId(req.headers.id)}, {
+    User.updateOne({"_id": ObjectId(req.headers.id)}, {
         $set: {
             crewLeader: req.headers.crewleader,
             admin: req.headers.admin,
@@ -136,6 +137,10 @@ app.put("/updateUser", auth, (req, res) => {
     }).catch(e => {
         res.status(404).json("Could not update")
     })
+})
+
+app.get("/getCurrentUser", auth, (req, res) => {
+    res.json(req.user)
 })
 
 //////////////////
@@ -190,7 +195,7 @@ app.get("/retrieveEvents", auth, (req, res) => {
 
 // Add to event
 app.put("/addToEvent", auth, (req, res) => {
-    Event.updateOne({_id: ObjectId(req.headers.eventid)}, {
+    Event.updateOne({"_id": ObjectId(req.headers.eventid)}, {
         $push: {
             volunteers: [[req.headers.userid, req.headers.username]]
         }
@@ -203,7 +208,7 @@ app.put("/addToEvent", auth, (req, res) => {
 
 // Delete event
 app.delete("/deleteEvent", auth, (req, res) => {
-    Event.deleteOne({_id: ObjectId(req.headers.id)})
+    Event.deleteOne({"_id": ObjectId(req.headers.id)})
     .then(val => {res.json(val)})
     .catch(e => {res.status(404).json("Could not delete")})
 })
