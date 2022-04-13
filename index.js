@@ -2,10 +2,15 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require("cors");
+const axios = require("axios");
 const app = express();
 var env = require('dotenv').config();
 app.use(cors());
 app.use(express.json());
+
+// API Keys.
+const GEOAPIFY_KEY = process.env.GEOAPIFY_KEY;
+
 
 // schemas
 const User = require('./models/user');
@@ -22,7 +27,8 @@ const auth = require("./middleware/auth")
 const PORT = process.env.PORT || 3000;
 
 //connect to Azure Cosmos DB through mongoose
-mongoose.connect("mongodb://"+process.env.COSMOSDB_HOST+":"+process.env.COSMOSDB_PORT+"/"+process.env.COSMOSDB_DBNAME+"?ssl=true&retrywrites=false&maxIdleTimeMS=120000&replicaSet=globaldb", {
+const URI = `mongodb://${process.env.COSMOSDB_HOST}:${process.env.COSMOSDB_PORT}/${process.env.COSMOSDB_DBNAME}?ssl=true&retrywrites=false&maxIdleTimeMS=120000&replicaSet=globaldb`;
+mongoose.connect(URI, {
    auth: {
      username: process.env.COSMOSDB_USER,
      password: process.env.COSMOSDB_PASSWORD
@@ -99,7 +105,6 @@ app.post("/signin", async (req, res) => {
 // Retreieve User
 app.get("/retrieveUser", auth, (req, res) => {
     User.find({"username" : (req.headers.username)})
-
     .then((user) => {
         if (user.length !== 0) {
             res.json(user)
@@ -180,7 +185,6 @@ app.get("/retrieveEvent", auth, (req, res) => {
 
 // Retrieve all Events
 app.get("/retrieveEvents", auth, (req, res) => {
-
     // Find all users
     const query = Event.find({});
 
@@ -213,11 +217,16 @@ app.delete("/deleteEvent", auth, (req, res) => {
     .catch(e => {res.status(404).json("Could not delete")})
 })
 
+
+// Query GEOAPIFY for event address field.
+app.post("/geoapify", (req, res) => {
+    const formattedAddress = req.body.formattedAddress;
+
+    axios.get("https://api.geoapify.com/v1/geocode/autocomplete?text=" + formattedAddress + "&format=json&apiKey=" + GEOAPIFY_KEY)
+        .then(response => {
+            const results = response.data.results;
+            res.send(results);
+        })
+})
+
 app.listen(PORT, () => console.log("Listening on port " + PORT));
-
-
-// Update user
-
-// Sign up for event (add )
-
-// Delete event

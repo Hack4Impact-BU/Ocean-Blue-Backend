@@ -10,5 +10,6 @@ npm-debug.*
 *.env
 web-build/
 
+ocean_blue_ssh_key.pem
 # macOS
 .DS_Store
