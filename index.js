@@ -10,6 +10,7 @@ app.use(express.json());
 // schemas
 const User = require('./models/user');
 const Event = require('./models/event');
+const ObjectId = require('mongodb').ObjectId;
 
 // password encryption
 const bcrypt = require('bcrypt');
@@ -32,6 +33,10 @@ mongoose.connect("mongodb://"+process.env.COSMOSDB_HOST+":"+process.env.COSMOSDB
 app.get("/", (req, res) => {
     res.send("Welcome To the Azure Backend Using Mongoose")
 })
+
+//////////////////
+///// USERS //////
+//////////////////
 
 // Register route
 app.post("/register", async (req, res) => {
@@ -90,8 +95,6 @@ app.post("/signin", async (req, res) => {
     }).catch((e) => {console.log(e)})
 })
 
-const ObjectId = require('mongodb').ObjectId;
-
 // Retreieve User
 app.get("/retrieveUser", auth, (req, res) => {
     User.find({"username" : (req.headers.username)})
@@ -118,6 +121,26 @@ app.get("/retrieveUsers", auth, (req, res) => {
         res.json(users)
     });
 })
+
+// Update user
+app.put("/updateUser", auth, (req, res) => {
+    User.updateOne({_id: ObjectId(req.headers.id)}, {
+        $set: {
+            crewLeader: req.headers.crewleader,
+            admin: req.headers.admin,
+        }, $inc: {
+            points: req.headers.points,
+        }
+    }).then((val) => {
+        res.json(val)
+    }).catch(e => {
+        res.status(404).json("Could not update")
+    })
+})
+
+//////////////////
+//// EVENTS //////
+//////////////////
 
 // Set event
 app.post("/createEvent", auth, (req, res) => {
@@ -163,6 +186,26 @@ app.get("/retrieveEvents", auth, (req, res) => {
         if (err) return handleError(err);
         res.json(users)
     });
+})
+
+// Add to event
+app.put("/addToEvent", auth, (req, res) => {
+    Event.updateOne({_id: ObjectId(req.headers.eventid)}, {
+        $push: {
+            volunteers: [[req.headers.userid, req.headers.username]]
+        }
+    }).then((val) => {
+        res.json(val)
+    }).catch(e => {
+        res.status("404").json("Could not add to event")
+    })
+})
+
+// Delete event
+app.delete("/deleteEvent", auth, (req, res) => {
+    Event.deleteOne({_id: ObjectId(req.headers.id)})
+    .then(val => {res.json(val)})
+    .catch(e => {res.status(404).json("Could not delete")})
 })
 
 app.listen(PORT, () => console.log("Listening on port " + PORT));
