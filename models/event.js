@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const eventSchema = {
     eventCreator: String,
+    title: String,
     date: String,
     description: String,
     address: String,
