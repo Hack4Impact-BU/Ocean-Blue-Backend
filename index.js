@@ -155,7 +155,8 @@ app.get("/getCurrentUser", auth, (req, res) => {
 // Set event
 app.post("/createEvent", auth, (req, res) => {
     const newEvent = new Event({
-        eventCreator: req.body.eventCreator,
+        eventCreator: req.user.id,
+        title: req.body.title,
         date: req.body.date,
         description: req.body.description,
         address: req.body.address,
