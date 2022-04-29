@@ -14,6 +14,7 @@ const userSchema = {
     admin: Boolean,
     crewLeader: Boolean,
     events: Array,
+    picture: Array,
 }
 
 const User = mongoose.model("Users", userSchema);
