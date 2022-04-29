@@ -13,6 +13,7 @@ const userSchema = {
     description: String,
     admin: Boolean,
     crewLeader: Boolean,
+    events: Array,
 }
 
 const User = mongoose.model("Users", userSchema);
