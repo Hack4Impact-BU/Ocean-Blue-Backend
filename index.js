@@ -54,7 +54,6 @@ app.post("/register", async (req, res) => {
 
     User.find({email: req.body.email})
     .then(async (user) => {
-        console.log(user)
         if (user.length == 0) {
             const newUser = new User({
                 username: req.body.username,
@@ -69,12 +68,15 @@ app.post("/register", async (req, res) => {
                 description: req.body.description,
                 admin: false,
                 crewLeader: false,
-                events: []
+                events: [],
+                picture: req.body.picture,
             });
+
+            console.log(req.body.picture);
         
             newUser.save()
             .then(user => {
-                const payload = { id: user.id, username: user.username, isAdmin: user.admin, isCrewLeader: user.crewLeader };
+                const payload = { id: user.id, username: user.username, isAdmin: user.admin, isCrewLeader: user.crewLeader, picture: user.picture[0] };
                 res.json(jwt.sign(payload, process.env.JWT_SECRET));
             })
 
