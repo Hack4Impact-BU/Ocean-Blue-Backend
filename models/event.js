@@ -11,6 +11,7 @@ const eventSchema = {
     garbageCollected: Number,
     isPublic: Boolean,
     volunteers: Array,
+    imageAzureURIs: Array
 }
 
 const Event = mongoose.model("Events", eventSchema);
