@@ -66,7 +66,7 @@ app.post("/register", async (req, res) => {
                 description: req.body.description,
                 admin: false,
                 crewLeader: false,
-        
+                events: []
             });
         
             newUser.save()
@@ -102,9 +102,21 @@ app.post("/signin", async (req, res) => {
     }).catch((e) => {console.log(e)})
 })
 
-// Retreieve User
+// Retreieve User by Username
 app.get("/retrieveUser", auth, (req, res) => {
     User.find({"username" : (req.headers.username)})
+    .then((user) => {
+        if (user.length !== 0) {
+            res.json(user)
+        } else {
+            res.status(404).json("User not found.")
+        }
+    })
+})
+
+// Retrieve User by ID
+app.get("/retrieveUserID", auth, (req, res) => {
+    User.find({"_id" : ObjectId(req.headers.id)})
     .then((user) => {
         if (user.length !== 0) {
             res.json(user)
@@ -205,10 +217,17 @@ app.put("/addToEvent", auth, (req, res) => {
             volunteers: [[req.headers.userid, req.headers.username]]
         }
     }).then((val) => {
-        res.json(val)
+        User.updateOne({"_id": ObjectId(req.headers.userid)}, {
+            $push: {
+                events: [req.headers.eventid]
+            }
+        }).then((response) => {
+            res.json(response)
+        })
     }).catch(e => {
         res.status("404").json("Could not add to event")
     })
+
 })
 
 // Delete event
