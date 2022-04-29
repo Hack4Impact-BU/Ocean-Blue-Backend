@@ -1,4 +1,4 @@
-// routing
+// Initialization.
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require("cors");
@@ -34,6 +34,9 @@ mongoose.connect(URI, {
      password: process.env.COSMOSDB_PASSWORD
    }
 });
+
+// Routing.
+const blob = require("./blob");
 
 // Default route
 app.get("/", (req, res) => {
@@ -165,6 +168,7 @@ app.post("/createEvent", auth, (req, res) => {
         garbageCollected: 0,
         isPublic: req.body.isPublic,
         volunteers: [],
+        imageAzureURIs: req.body.imageAzureURIs
     });
 
     newEvent.save()
@@ -229,5 +233,10 @@ app.post("/geoapify", (req, res) => {
             res.send(results);
         })
 })
+
+//////////////////////////////
+//// AZURE BLOB STORAGE //////
+//////////////////////////////
+app.use("/blob", blob);
 
 app.listen(PORT, () => console.log("Listening on port " + PORT));
