@@ -177,7 +177,7 @@ app.post("/createEvent", auth, (req, res) => {
         address: req.body.address,
         latitude: req.body.latitude,
         longitude: req.body.longitude,
-        garbageCollected: 0,
+        garbageCollected: [],
         isPublic: req.body.isPublic,
         volunteers: [],
         imageAzureURIs: req.body.imageAzureURIs
@@ -240,6 +240,20 @@ app.delete("/deleteEvent", auth, (req, res) => {
     .then(val => {res.json(val)})
     .catch(e => {res.status(404).json("Could not delete")})
 })
+
+
+app.post("/addEventGarbageData", auth, (req, res) => {
+    Event.updateOne({"_id": ObjectId(req.headers.eventid)}, {
+        $push: {
+            garbageCollected: req.body.garbage
+        }
+    }).then((val) => {
+       res.json(val)
+    }).catch(e => {
+        res.status("404").json("Could not add garbage to event")
+    })
+})
+
 
 
 // Query GEOAPIFY for event address field.
