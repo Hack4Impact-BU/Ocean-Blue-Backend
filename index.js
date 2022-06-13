@@ -182,7 +182,6 @@ app.post("/createEvent", auth, (req, res) => {
         volunteers: [],
         imageAzureURIs: req.body.imageAzureURIs
     });
-
     newEvent.save()
     .then(event => {res.json(event)})
     .catch(err => {res.status(400).json("Error" + err)})
@@ -258,6 +257,27 @@ app.post("/addEventGarbageData", auth, (req, res) => {
     })
 })
 
+
+app.get("/searchEvents", auth, (req, res) => {
+    searchString = ''
+    if(!req.query.page){
+        res.status(400).json("page number required");
+    }
+    if(req.query.searchString){
+        searchString = req.query.searchString;
+    }
+    const query = Event.find(
+        {$or:[{title: {$regex: '.*' + searchString + '.*'}},{description:{$regex: '.*' + searchString + '.*'}}]})
+    .skip(req.query.page * 10)
+    .limit(10)
+    .lean()
+    query.select('eventCreator title description address date latitude longitude volunteers');
+
+    query.exec(function (err, events) {
+        if (err) res.status(400).json("unable to seach events");
+        res.json(events);
+    });
+})
 
 
 // Query GEOAPIFY for event address field.
