@@ -241,7 +241,11 @@ app.delete("/deleteEvent", auth, (req, res) => {
     .catch(e => {res.status(404).json("Could not delete")})
 })
 
-
+/*
+    body: {
+        "garbage": [{"name": "<garbage name>", "amount": <garbage amount (in lbs)>}]
+    }
+*/
 app.post("/addEventGarbageData", auth, (req, res) => {
     Event.updateOne({"_id": ObjectId(req.headers.eventid)}, {
         $push: {
