@@ -54,7 +54,6 @@ app.post("/register", async (req, res) => {
 
     User.find({email: req.body.email})
     .then(async (user) => {
-        console.log(user)
         if (user.length == 0) {
             const newUser = new User({
                 username: req.body.username,
@@ -69,12 +68,15 @@ app.post("/register", async (req, res) => {
                 description: req.body.description,
                 admin: false,
                 crewLeader: false,
-                events: []
+                events: [],
+                picture: req.body.picture,
             });
+
+            console.log(req.body.picture);
         
             newUser.save()
             .then(user => {
-                const payload = { id: user.id, username: user.username, isAdmin: user.admin, isCrewLeader: user.crewLeader };
+                const payload = { id: user.id, username: user.username, isAdmin: user.admin, isCrewLeader: user.crewLeader, picture: user.picture[0] };
                 res.json(jwt.sign(payload, process.env.JWT_SECRET));
             })
 
@@ -177,12 +179,11 @@ app.post("/createEvent", auth, (req, res) => {
         address: req.body.address,
         latitude: req.body.latitude,
         longitude: req.body.longitude,
-        garbageCollected: 0,
+        garbageCollected: [],
         isPublic: req.body.isPublic,
         volunteers: [],
         imageAzureURIs: req.body.imageAzureURIs
     });
-
     newEvent.save()
     .then(event => {res.json(event)})
     .catch(err => {res.status(400).json("Error" + err)})
@@ -239,6 +240,45 @@ app.delete("/deleteEvent", auth, (req, res) => {
     Event.deleteOne({"_id": ObjectId(req.headers.id)})
     .then(val => {res.json(val)})
     .catch(e => {res.status(404).json("Could not delete")})
+})
+
+/*
+    body: {
+        "garbage": [{"name": "<garbage name>", "amount": <garbage amount (in lbs)>}]
+    }
+*/
+app.post("/addEventGarbageData", auth, (req, res) => {
+    Event.updateOne({"_id": ObjectId(req.headers.eventid)}, {
+        $push: {
+            garbageCollected: req.body.garbage
+        }
+    }).then((val) => {
+       res.json(val)
+    }).catch(e => {
+        res.status("404").json("Could not add garbage to event")
+    })
+})
+
+
+app.get("/searchEvents", auth, (req, res) => {
+    searchString = ''
+    if(!req.query.page){
+        res.status(400).json("page number required");
+    }
+    if(req.query.searchString){
+        searchString = req.query.searchString;
+    }
+    const query = Event.find(
+        {$or:[{title: {$regex: '.*' + searchString + '.*'}},{description:{$regex: '.*' + searchString + '.*'}}]})
+    .skip(req.query.page * 10)
+    .limit(10)
+    .lean()
+    query.select('eventCreator title description address date latitude longitude volunteers');
+
+    query.exec(function (err, events) {
+        if (err) res.status(400).json("unable to seach events");
+        res.json(events);
+    });
 })
 
 
