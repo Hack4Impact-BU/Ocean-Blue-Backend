@@ -77,7 +77,7 @@ app.post("/register", async (req, res) => {
         
             newUser.save()
             .then(user => {
-                const payload = { id: user.id, username: user.username, isAdmin: user.admin, isCrewLeader: user.crewLeader, picture: user.picture[0] };
+                const payload = { id: user.id, username: user.username, isAdmin: user.admin, isCrewLeader: user.crewLeader, picture: false };
                 res.json(jwt.sign(payload, process.env.JWT_SECRET));
             })
 

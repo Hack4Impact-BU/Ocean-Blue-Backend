@@ -36,37 +36,39 @@ const generateBlobName = (originalName) => {
 // Upload images into Azure Blob Storage.
 // Returns an array of imageURIs as a response.
 router.post("/uploadImages", [auth, uploadStrategy], async (req, res) => {
-    try {
-        // Create array of images' Azure URIs to return.
-        let imageAzureURIs = [];
+    // try {
+    //     // Create array of images' Azure URIs to return.
+    //     let imageAzureURIs = [];
 
-        const containerClient = blobServiceClient.getContainerClient(containerName);
+    //     const containerClient = blobServiceClient.getContainerClient(containerName);
     
-        await req.files.forEach(async (file, i) => {
-            // Generate a random filename to store in Azure Blob.
-            let blobName = generateBlobName(file.originalname);
+    //     await req.files.forEach(async (file, i) => {
+    //         // Generate a random filename to store in Azure Blob.
+    //         let blobName = generateBlobName(file.originalname);
 
-            // Generate the Azure URI for the image and add it to the list.
-            let imageAzureURI = `https:${process.env.AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${process.env.AZURE_CONTAINER_NAME}/${blobName}`;
-            imageAzureURIs = [...imageAzureURIs, imageAzureURI];
+    //         // Generate the Azure URI for the image and add it to the list.
+    //         let imageAzureURI = `https:${process.env.AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${process.env.AZURE_CONTAINER_NAME}/${blobName}`;
+    //         imageAzureURIs = [...imageAzureURIs, imageAzureURI];
 
-            // Upload each image to Azure Blob Storage
-            let stream = Readable.from(file.buffer);
-            let blockBlobClient = containerClient.getBlockBlobClient(blobName);
-            await blockBlobClient.uploadStream(
-                stream,
-                uploadOptions.bufferSize, 
-                uploadOptions.maxBuffers,
-                { blobHTTPHeaders: { blobContentType: file.mimetype } }
-            );
-        });
+    //         // Upload each image to Azure Blob Storage
+    //         let stream = Readable.from(file.buffer);
+    //         let blockBlobClient = containerClient.getBlockBlobClient(blobName);
+    //         await blockBlobClient.uploadStream(
+    //             stream,
+    //             uploadOptions.bufferSize, 
+    //             uploadOptions.maxBuffers,
+    //             { blobHTTPHeaders: { blobContentType: file.mimetype } }
+    //         );
+    //     });
 
-        res.status(200).json(imageAzureURIs);
+    //     res.status(200).json(imageAzureURIs);
 
-    } catch (err) {
-        console.log(err);
-        res.status(500).json(err);
-    }
+    // } catch (err) {
+    //     console.log(err);
+    //     res.status(500).json(err);
+    // }
+
+    res.status(200).json("testing");
 })
 
 module.exports = router;
