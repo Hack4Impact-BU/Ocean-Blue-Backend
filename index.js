@@ -202,15 +202,10 @@ app.get("/retrieveEvent", auth, (req, res) => {
     })
 })
 
-// Retrieve all Events
-// **********************************************
-// **********************************************
-// TODO: RETURN ONLY PUBLIC EVENTS AND THOSE WITH A DATE GREATER THAN CURRENT
-// **********************************************
-// **********************************************
+// Retrieve all public events
 app.get("/retrieveEvents", auth, (req, res) => {
     // Find all users
-    const query = Event.find({});
+    const query = Event.find({ isPublic: true });
 
     // Select the eventCreator description address and date fields
     query.select('eventCreator title description address date latitude longitude volunteers');
@@ -221,6 +216,7 @@ app.get("/retrieveEvents", auth, (req, res) => {
     });
 })
 
+// Find all events that need to be approved
 app.get("/retrieveApprovalEvents", auth, (req, res) => {
     Event.find({ isPublic: false })
     .then((events) => {
