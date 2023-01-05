@@ -181,7 +181,7 @@ app.post("/createEvent", auth, (req, res) => {
         latitude: req.body.latitude,
         longitude: req.body.longitude,
         garbageCollected: [],
-        isPublic: req.body.isPublic,
+        isPublic: false,
         volunteers: [],
         imageAzureURIs: req.body.imageAzureURIs
     });
@@ -203,6 +203,11 @@ app.get("/retrieveEvent", auth, (req, res) => {
 })
 
 // Retrieve all Events
+// **********************************************
+// **********************************************
+// TODO: RETURN ONLY PUBLIC EVENTS AND THOSE WITH A DATE GREATER THAN CURRENT
+// **********************************************
+// **********************************************
 app.get("/retrieveEvents", auth, (req, res) => {
     // Find all users
     const query = Event.find({});
@@ -214,6 +219,14 @@ app.get("/retrieveEvents", auth, (req, res) => {
         if (err) return handleError(err);
         res.json(users)
     });
+})
+
+app.get("/retrieveApprovalEvents", auth, (req, res) => {
+    Event.find({ isPublic: false })
+    .then((events) => {
+        console.log(events)
+        res.json(events);
+    }).catch(e => (alert(e)));
 })
 
 // Add to event
@@ -235,6 +248,19 @@ app.put("/addToEvent", auth, (req, res) => {
     })
 
 })
+
+// Approve an event
+app.put("/approveEvent", auth, (req, res) => {
+    Event.updateOne({"_id": ObjectId(req.headers.eventid)}, {
+        $set: {
+            isPublic: true,
+        }
+    }).then((response) => {
+        res.json(response)
+    }).catch(e => {
+        res.status("404").json("Could not approve event")
+    })
+});
 
 // Delete event
 app.delete("/deleteEvent", auth, (req, res) => {
