@@ -136,9 +136,6 @@ app.get("/retrieveUserID", auth, (req, res) => {
 app.get("/retrieveUsers", auth, (req, res) => {
     // Find all users
     const query = User.find({});
-
-    // Select the username email and admin feilds
-    query.select('username email admin');
     
     query.exec(function (err, users) {
         if (err) return handleError(err);
